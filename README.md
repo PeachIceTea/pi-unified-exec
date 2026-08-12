@@ -471,6 +471,14 @@ PREVIEW_LINES                = 5       (visual TUI lines before app.tools.expand
 - **Spawn failures are diagnosable**: a nonexistent shell binary or `workdir`
   (async ENOENT from the OS) surfaces as `failure_message` in the response
   instead of a silent empty exit.
+- **Shell-exit vs pipe-close**: a session reports "running" until the output
+  pipe reaches EOF — the shell's own exit is not enough. Background
+  processes that inherited stdout/stderr (or a backgrounded `cd … && cmd &`
+  chain whose subshell keeps waiting) hold the pipe open, so the session
+  stays `[still running]` after its shell is gone. Such results carry a
+  `note` explaining the state and how to detach (`(cd dir && cmd >log 2>&1
+  </dev/null) &`, `setsid cmd >log 2>&1 </dev/null &`) or end it with
+  `kill_session`; `list_sessions` marks them `(shell exited, pipe held)`.
 - **Closed stdin is safe**: a child that closes its stdin no longer crashes
   the host on EPIPE; follow-up `write_stdin` calls report
   `failure_message: "stdin write failed: …"` when bytes can't be delivered.

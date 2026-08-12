@@ -2,6 +2,26 @@
 
 All notable changes to this project. **Newest entries go on top.**
 
+## 2026-08-12 — 0.9.1
+
+### Fixed
+
+- **Held-open sessions are now diagnosable instead of looking like a hang.**
+  A command that backgrounded processes with inherited stdout/stderr — or a
+  `cd … && cmd &` chain whose subshell keeps waiting — left the session
+  `[still running]` indefinitely after the shell itself had exited, with no
+  explanation (a live session misread this as an `exec_command` wrapper bug
+  and wasted calls restarting the jobs). The shell's `exit` event is now
+  tracked separately from the close-based session exit
+  (`SpawnedChild.processExited` / `ExecSession.shellExited`); `exec_command`
+  and `write_stdin` results in that state carry a `note` field ("shell has
+  exited, but background process(es) still hold the output pipe…" with
+  detach recipes), and the running-session widget / `list_sessions` mark
+  such sessions `(shell exited, pipe held)`. Lifecycle semantics are
+  unchanged: the session stays open, killable, and pollable — diagnosis
+  only, never a forced pipe close or command rewrite. Tests: held-open
+  suite (6 cases).
+
 ## 2026-08-04 — 0.9.0
 
 ### Fixed

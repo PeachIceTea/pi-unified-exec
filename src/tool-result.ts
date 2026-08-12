@@ -39,6 +39,8 @@ export interface OutputResultDetails {
 	omitted_bytes?: number;
 	/** Cumulative bytes this session has produced since spawn. */
 	output_bytes_total?: number;
+	/** Optional explanation of an unusual session state (e.g. shell exited but pipe held open). */
+	note?: string;
 }
 
 export interface ProcessResultDetails extends OutputResultDetails {
@@ -236,6 +238,7 @@ export function renderProcessResultText(shape: ProcessResultDetails): string {
 	if (shape.exit_code !== undefined) lines.push(`exit_code: ${shape.exit_code}`);
 	if (shape.signal) lines.push(`signal: ${safeMeta(shape.signal)}`);
 	if (shape.failure_message) lines.push(`failure: ${safeMeta(shape.failure_message)}`);
+	if (shape.note) lines.push(`note: ${safeMeta(shape.note)}`);
 	if (shape.wait_mode) lines.push(`wait_mode: ${safeMeta(shape.wait_mode)}`);
 	if (shape.wait_status) lines.push(`wait_status: ${safeMeta(shape.wait_status)}`);
 	if (shape.yield_until) lines.push(`yield_until: ${safeMeta(shape.yield_until)}`);

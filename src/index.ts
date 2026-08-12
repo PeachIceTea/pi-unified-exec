@@ -232,6 +232,23 @@ function resolveWriteInput(args: WriteStdinArgs): Uint8Array | undefined {
 	return undefined;
 }
 
+const HELD_OPEN_NOTE =
+	"shell has exited, but background process(es) still hold the output pipe " +
+	"(inherited stdout/stderr, or a backgrounded `cd … && cmd &` chain whose subshell is still waiting), " +
+	"so this session stays open until they exit. To detach: redirect inside the job — " +
+	"`(cd dir && cmd >log 2>&1 </dev/null) &` or `setsid cmd >log 2>&1 </dev/null &` — " +
+	"or end the session with kill_session.";
+
+/**
+ * Explanation for sessions whose shell has exited but whose output pipe is
+ * still held open by background processes: they report "running" even though
+ * the foreground command is long done. State-driven (never command-text
+ * matching), so it covers any construct that leaves a pipe holder behind.
+ */
+function heldOpenNote(session: ExecSession): string | undefined {
+	return session.shellExited && !session.hasExited ? HELD_OPEN_NOTE : undefined;
+}
+
 async function runExecCommand(
 	ctx: ExtensionCtx,
 	args: ExecCommandArgs,
@@ -415,6 +432,7 @@ async function runExecCommand(
 					on_exit: args.on_exit,
 					...(wantsWake ? { completion_notification: "armed" as const } : {}),
 					tool_time_utc: nowUtcIso(),
+					note: heldOpenNote(session),
 				},
 			});
 		}
@@ -587,6 +605,7 @@ async function runWriteStdin(
 					: {}),
 				tool_time_utc: nowUtcIso(),
 				...(armed ? { on_exit: "wake" as const, completion_notification: "armed" as const } : {}),
+				note: heldOpenNote(session),
 			},
 		});
 	} catch (err) {
@@ -747,6 +766,7 @@ async function runAbsoluteWait(
 			effective_wait_ms: Date.now() - startMs,
 			tool_time_utc: nowUtcIso(),
 			...(armed ? { on_exit: "wake" as const, completion_notification: "armed" as const } : {}),
+			note: heldOpenNote(session),
 		},
 	});
 }
@@ -829,7 +849,8 @@ function formatRunningSessionsWidget(ctx: ExtensionCtx, sessions: ExecSession[])
 		`⚠ unified-exec: ${sessions.length} ${plural(sessions.length, "session")} still running`,
 		...shown.map((s) => {
 			const wake = ctx.coordinator.isArmed(s.id) ? " [wake]" : "";
-			return `  #${s.id} ${formatElapsed(now - s.startedAt)}${wake} ${oneLineCommand(s.displayCommand, 72)} (${s.cwd})`;
+			const held = s.shellExited ? " (shell exited, pipe held)" : "";
+			return `  #${s.id} ${formatElapsed(now - s.startedAt)}${wake}${held} ${oneLineCommand(s.displayCommand, 72)} (${s.cwd})`;
 		}),
 	];
 	if (sessions.length > shown.length) lines.push(`  … ${sessions.length - shown.length} more; use list_sessions`);
@@ -1102,7 +1123,8 @@ export default function (pi: ExtensionAPI) {
 			const now = Date.now();
 			const labels = sessions.map((s) => {
 				const wake = ctx.coordinator.isArmed(s.id) ? " [wake]" : "";
-				return `#${s.id} ${formatElapsed(now - s.startedAt)}${wake} ${oneLineCommand(s.displayCommand, 60)}`;
+				const held = s.shellExited ? " (shell exited, pipe held)" : "";
+				return `#${s.id} ${formatElapsed(now - s.startedAt)}${wake}${held} ${oneLineCommand(s.displayCommand, 60)}`;
 			});
 			const KILL_ALL = `Kill all ${sessions.length} ${plural(sessions.length, "session")}`;
 			const choice = await cmdCtx.ui.select(

@@ -310,6 +310,17 @@ export class ExecSession {
 		return this.state.hasExited;
 	}
 
+	/**
+	 * The shell process itself has exited. In pipes mode this can be true
+	 * while `hasExited` is still false: background jobs that inherited the
+	 * output pipe keep it open, so the close-based session exit lags (or
+	 * never arrives). Lets callers explain a session that reports "running"
+	 * although its shell is gone.
+	 */
+	get shellExited(): boolean {
+		return this.child.processExited;
+	}
+
 	get exitCode(): number | null {
 		return this.state.exitCode;
 	}
