@@ -2,6 +2,21 @@
 
 All notable changes to this project. **Newest entries go on top.**
 
+## Unreleased
+
+### Changed
+
+- Updated the exact Pi/TUI development baseline from 0.83.0 to 0.84.1,
+  TypeBox from 1.1.24 to 1.3.7, and the test runner to `tsx` 4.23.12.
+  Synchronized the lockfile root metadata with package version 0.9.1. Runtime
+  source, peer compatibility, and npm runtime installation policy are
+  unchanged.
+
+### Validated
+
+- Strict typecheck and the complete unit/integration suite pass against Pi
+  0.84.1; package dry-run and the full npm audit also pass.
+
 ## 2026-08-12 — 0.9.1
 
 ### Fixed
