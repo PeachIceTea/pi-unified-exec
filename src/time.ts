@@ -50,10 +50,8 @@ export function parseYieldUntil(raw: string, nowMs: number): ParsedYieldUntil {
 	const m = RFC3339_UTC_RE.exec(raw);
 	if (!m) {
 		throw new Error(
-			`yield_until must be an RFC 3339 UTC timestamp like "2026-07-21T18:30:00Z" or ` +
-				`"2026-07-21T18:30:00.123Z" (complete date and time with seconds, 0-3 fractional digits, ` +
-				`uppercase trailing "Z"; offsets such as "+00:00" and local timestamps are rejected). ` +
-				`Got: "${raw}". tool_time_utc: ${toolTime}`,
+			`yield_until must be an RFC 3339 UTC timestamp like "2026-07-21T18:30:00Z" (seconds required, ` +
+				`0-3 fraction digits, trailing "Z"; no offsets or local time). Got: "${raw}". tool_time_utc: ${toolTime}`,
 		);
 	}
 	const year = Number(m[1]);

@@ -67,7 +67,7 @@ export function buildShellCommand(shellBin: string, cmd: string, isWindows: bool
 			// cmd.exe /c silently stops at the first newline, executing only
 			// the first line — fail closed rather than silently truncate.
 			throw new Error(
-				'cmd.exe cannot run multiline commands via /c (everything after the first line is silently dropped). Join lines with " & ", or use shell: "powershell" or bash.',
+				'cmd.exe cannot run multiline commands via /c. Join lines with " & ", or use shell: "powershell" or bash.',
 			);
 		}
 		// /d skip AutoRun, /s standard quote handling, /c run-and-exit.

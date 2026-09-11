@@ -6,6 +6,13 @@ All notable changes to this project. **Newest entries go on top.**
 
 ### Changed
 
+- Tightened the agent-facing tool text: shorter `description`, `promptGuidelines`,
+  and parameter descriptions for all five tools, plus leaner error and result
+  messages (yield_until validation, empty-poll cap, tty fallback, set_on_exit
+  results, list_sessions lines, the held-open note, and completion wake batches).
+  Replaced "the human" with "the user" throughout agent-facing copy. Behavior is
+  unchanged.
+
 - Updated the exact Pi/TUI development baseline from 0.83.0 to 0.84.1,
   TypeBox from 1.1.24 to 1.3.7, and the test runner to `tsx` 4.23.12.
   Synchronized the lockfile root metadata with package version 0.9.1. Runtime

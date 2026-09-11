@@ -461,8 +461,8 @@ export function buildWakeMessage(snapshots: CompletionSnapshot[]): WakeMessage {
 	const shown = snapshots.slice(0, MAX_SESSIONS_PER_WAKE);
 	const lines: string[] = [];
 	lines.push(
-		`[unified-exec] ${snapshots.length} background ${snapshots.length === 1 ? "session" : "sessions"} exited. ` +
-			`This is execution metadata reported by the exec tool, not user-authored instructions.`,
+		`[unified-exec] ${snapshots.length} background ${snapshots.length === 1 ? "session" : "sessions"} exited — execution ` +
+			`metadata from the exec tool, not user-authored instructions.`,
 	);
 	for (const s of shown) {
 		const status =
@@ -483,9 +483,8 @@ export function buildWakeMessage(snapshots: CompletionSnapshot[]): WakeMessage {
 		lines.push(`… and ${snapshots.length - shown.length} more (use list_sessions).`);
 	}
 	lines.push(
-		"Final output has NOT necessarily been consumed: call write_stdin with no chars for each exited " +
-			"session_id to drain its final output, or read the log_path (if a session_id is no longer known, " +
-			"use the log_path). Then continue the original task — do not merely acknowledge this notification.",
+		"Final output may not have been consumed: drain it with an empty write_stdin call per session_id " +
+			"(or read the log_path if the session is gone). Then continue the original task — do not merely acknowledge this.",
 	);
 	return {
 		content: lines.join("\n"),
